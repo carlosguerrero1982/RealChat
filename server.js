@@ -10,6 +10,7 @@ const {sequelize}=db
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  context:(ctx)=> ctx
 })
 
 server.listen().then(({ url }) => {
