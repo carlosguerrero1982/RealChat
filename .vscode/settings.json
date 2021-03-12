@@ -1,0 +1,12 @@
+{
+    "jshint.enable": false,
+    "jshint.options": {
+        "esversion": 6,
+    },
+    "jshint.config": "",
+    "beautify.config": "",
+    "jshint.lintHTML": false,
+    "files.associations": {
+        "*.js": "javascriptreact"
+    }
+}
