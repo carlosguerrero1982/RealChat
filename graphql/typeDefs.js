@@ -16,8 +16,17 @@ type User{
 
 }
 
+type Message{
+    uuid:String!
+    content:String! 
+    to:String!
+    from:String!
+
+}
+
 type Mutation{
     register(username:String!,email:String!,password:String!,confirmPassword:String!):User!
+    sendMessage(to:String!,content:String!):Message!
 }
 
 `;

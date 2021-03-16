@@ -1,57 +1,52 @@
 import '../App.scss';
 import React,{useState} from 'react'
 import {Row,Col,Form,Button} from 'react-bootstrap'
-import { useMutation, gql } from '@apollo/client';
+import { useLazyQuery, gql } from '@apollo/client';
 import { Link } from 'react-router-dom'
 
-const REGISTER_USER = gql`
-  mutation register(
+const LOGIN_USER = gql`
+  query login(
     $username: String!
-    $email: String!
     $password: String!
-    $confirmPassword: String!
+    
   ) {
-    register(
+    login(
       username: $username
-      email: $email
       password: $password
-      confirmPassword: $confirmPassword
+     
     ) {
       username
       email
       createdAt
+      token
     }
   }
 `
 
 
-function Register(props) {
+function Login(props) {
 
         
-  function registerForm(e){
+  function loginForm(e){
 
         e.preventDefault()
 
-        register({ variables });
+        login({ variables });
 
        }
 
       const [errors,setError]=useState({})
 
     
-       const [register, { loading }] = useMutation(REGISTER_USER,{
+       const [login, { loading }] = useLazyQuery(LOGIN_USER,{
         
-        update:(_,__)=>{
-
-          props.history.push('/login')
-
-        },
+        
         onError:({graphQLErrors, networkError})=>{
 
           if (graphQLErrors) {
             graphQLErrors.forEach(({message,...details}) =>
-            setError(details.extensions)
-           // console.log(`GraphQL Error: Message: ${message}`, details.extensions),
+          //  console.log(`GraphQL Error: Message: ${message}`, details.extensions),
+          setError(details.extensions)
             );
             
           }
@@ -59,6 +54,11 @@ function Register(props) {
           if (networkError) {
            setError(networkError);
           }
+        },
+        onCompleted:(data)=>{
+                localStorage.setItem('token',data.login.token)
+                props.history.push('/home')
+
         }
             
       });
@@ -67,10 +67,9 @@ function Register(props) {
 
 
         const [variables, setVariables] = useState({
-        email:'',
+    
         username:'',
         password:'',
-        confirmPassword:'',
 
         })  
 
@@ -80,17 +79,11 @@ function Register(props) {
 
         <Row className="bg-white py-5 justify-content-center">
         <Col sm={8} md={6} lg={4}> 
-          <h1>Register</h1>
+          <h1>Login</h1>
 
-          <Form onSubmit={registerForm}>
+          <Form onSubmit={loginForm}>
 
-          <Form.Group>    
-
-              <Form.Label className={errors.email && 'text-danger'}>{errors.email ?? 'Email address'}</Form.Label>
-              <Form.Control   type="email" value= {variables.email} onChange={(e)=>setVariables({...variables,email:e.target.value})} />
-
-          </Form.Group>
-
+          
           <Form.Group>
 
             <Form.Label className={errors.username && 'text-danger'} > {errors.username ?? 'Username'} </Form.Label>
@@ -106,21 +99,16 @@ function Register(props) {
           </Form.Group>
 
 
-          <Form.Group>
-
-            <Form.Label className={errors.confirmPassword && 'text-danger'}>{errors.confirmPassword ?? 'Confirm Password'}</Form.Label>
-            <Form.Control  type="password"  value= {variables.confirmPassword} onChange={(e)=>setVariables({...variables,confirmPassword:e.target.value})} />
-
-          </Form.Group>
+        
 
           <div className="text-center">
             <Button variant="primary" type="submit" disabled={loading}>
-              {loading ? 'loading':'register'}
+              {loading ? 'loading':'Login'}
             </Button>
 
             <br />
             <small>
-              Already have an account? <Link to="/login">Login</Link>
+              Not have an account? <Link to="/register">Register</Link>
             </small>
 
           </div>
@@ -132,4 +120,4 @@ function Register(props) {
     )
 }
 
-export default Register
+export default Login
