@@ -4,9 +4,9 @@ import {Container} from 'react-bootstrap'
 import Register from './pages/Register'
 import Home from './pages/Home'
 import Login from './pages/Login'
-
+import {AuthReducerProvider} from './context/auth'
 import ApolloProvider from './pages/ApolloProvider'
-
+import DynamicRoute from './util/DynamicRoute'
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
 
 function App() {
@@ -17,6 +17,7 @@ function App() {
 
     <ApolloProvider>
 
+    <AuthReducerProvider>
     <BrowserRouter>
 
       <Container className="pt-5">
@@ -26,13 +27,9 @@ function App() {
 
 
 
-        <Route path="/register" component={Register} />
-
-
-        <Route path="/login" component={Login} />
-
-
-        <Route exac path="/" component={Home} />
+      <DynamicRoute exact path="/" component={Home} authenticated />
+      <DynamicRoute path="/register" component={Register} guest />
+      <DynamicRoute path="/login" component={Login} guest />
 
 
 
@@ -41,8 +38,7 @@ function App() {
       </Container>
 
     </BrowserRouter>
-     
-
+    </AuthReducerProvider>
     </ApolloProvider>
     
 

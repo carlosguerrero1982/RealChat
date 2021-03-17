@@ -81,6 +81,43 @@ Query:{
                 throw new UserInputError('error',error)
 
             }
+        },
+
+        getMessages:async(_,{from},{user})=>{
+
+            try {
+                if (!user) throw new AuthenticationError('Unauthenticated')
+
+                const otherUser = await User.findOne({where:{username:from}})
+
+                if(!otherUser){
+                    throw new UserInputError('not recipient')
+                }
+
+                const usernames=[user.username,otherUser.username]
+
+                const messages = await Message.findAll({
+                    where:{
+                        from:{
+                            [Op.in]:usernames
+                        },
+
+                        to:{
+                            [Op.in]:usernames
+                        },  
+                    },
+
+                    order:[['createdAt','DESC']],
+
+                })
+
+                return messages
+
+            } catch (error) {
+                console.log(error);
+                throw error
+
+            }
         }
     },
 
@@ -156,6 +193,8 @@ Query:{
                 const recipient = await User.findOne({where:{username:to}})
                 if(!recipient){
                     throw new UserInputError('not recipient')
+                }else if(recipient.username===user.username){
+                    throw new UserInputError('cannot send to yourself')
                 }
 
                 if(content.trim()===''){
