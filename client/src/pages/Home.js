@@ -1,28 +1,49 @@
-import React,{Fragment} from 'react'
-import {Row,Button,Col} from 'react-bootstrap'
+import React,{useState,useEffect,Fragment} from 'react'
+import {Row,Button,Col,Image} from 'react-bootstrap'
 import {Link} from 'react-router-dom'
 import { UserAuthDispatch } from '../context/auth'
-import {gql,useQuery} from '@apollo/client'
+import {gql,useQuery,useLazyQuery} from '@apollo/client'
 
 
 const GET_USERS = gql `
 
 query getUsers {
     getUsers {
-      username
-      email
+    username
+    email
+    imageUrl
+    createdAt
+    latestMessage{
+      to
+      from
+      content
       createdAt
     }
   }
+}
 
+`;
+
+const GET_MESSAGES = gql `
+
+query getMessages($from:String!) {
+    getMessages(from:$from) {
+      uuid
+      to
+      from
+      content
+      createdAt
+    }
+  }
 
 `;
 
 
 
 
-
 function Home({history}) {
+
+  const [selectedUser, setSelectedUser] = useState(null);
 
     const dispatch = UserAuthDispatch()
 
@@ -33,16 +54,21 @@ function Home({history}) {
 
     }
 
+    const[getMessages,{loading:messagesLoading,data:messagesData}] = useLazyQuery(GET_MESSAGES)
+
+
+    useEffect(() => {
+      
+      if(selectedUser){
+        getMessages({variables:{from:selectedUser}})
+      }
+    }, [selectedUser])
+
+    if(messagesData) console.log(messagesData.getMessages);
+
     const {loading,data,error}= useQuery(GET_USERS)
 
-    if(error){
-
-        console.log(error);
-    }
-
-    if(data){
-        console.log(data);
-    }
+  
 
     let usersMarkup
   if (!data || loading) {
@@ -51,8 +77,19 @@ function Home({history}) {
     usersMarkup = <p>No users have joined yet</p>
   } else if (data.getUsers.length > 0) {
     usersMarkup = data.getUsers.map((user) => (
-      <div key={user.username}>
-        <p>{user.username}</p>
+      <div className="d-flex p-3" key={user.username} onClick={()=>setSelectedUser(user.username)}>
+
+      <Image src={user.imageUrl} roundedCircle className="mr-2" style={{width:50,height:50,objectFit:'cover'}}/>
+
+      <div>
+      <p className="text-success">{user.username}</p>
+
+      <p className="font-weight-light">
+        {user.latestMessage ? user.latestMessage.content:'not connected'}
+      </p>
+
+      </div>
+
       </div>
     ))
   }
@@ -71,9 +108,14 @@ function Home({history}) {
           </Button>
         </Row>
         <Row className="bg-white">
-          <Col xs={4}>{usersMarkup}</Col>
+          <Col xs={4} className="px-0">{usersMarkup}</Col>
           <Col xs={8}>
-            <p>Messages</p>
+            {messagesData && messagesData.getMessages.length> 0 ?(
+              messagesData.getMessages.map(message=>(
+                <p key={message.uuid}>{message.content}</p>
+              ))
+            ):(<p>Messages</p>)
+            }
           </Col>
         </Row>
       </Fragment>

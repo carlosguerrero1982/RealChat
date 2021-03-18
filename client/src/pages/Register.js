@@ -34,16 +34,20 @@ function Register(props) {
 
         register({ variables });
 
+        
+
        }
 
       const [errors,setError]=useState({})
 
     
-       const [register, { loading }] = useMutation(REGISTER_USER,{
+       const [register, { loading,data }] = useMutation(REGISTER_USER,{
         
         update:(_,__)=>{
 
           props.history.push('/login')
+          console.log(data);
+
 
         },
         onError:({graphQLErrors, networkError})=>{
@@ -59,8 +63,9 @@ function Register(props) {
           if (networkError) {
            setError(networkError);
           }
-        }
-            
+        },
+
+  
       });
 
 

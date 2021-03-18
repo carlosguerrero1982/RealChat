@@ -14,9 +14,11 @@ type Query{
 
 type User{
     username:String! 
-    email:String!
+    email:String
+    imageUrl:String
     token:String
     createdAt: String!
+    latestMessage:Message
 }
 
 type Message{
